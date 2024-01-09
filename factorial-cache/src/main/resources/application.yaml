@@ -1,0 +1,3 @@
+factorial:
+  language: ${APP_LANGUAGE:en}
+  api-key: ${API_KEY:abcd-1234}

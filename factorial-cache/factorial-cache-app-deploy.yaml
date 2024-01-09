@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-factorial-cache-app
+  namespace: factorial
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: factorial-cache-app
+  template:
+    metadata:
+      labels:
+        app: factorial-cache-app
+    spec:
+      terminationGracePeriodSeconds: 60 #굳이 설정 안해도되는데 테스트겸 설정해보기 default 30 초
+      volumes:
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+        - name: log-volume
+          persistentVolumeClaim:
+            claimName: cache-log-storage-claim
+      containers:
+        - name: factorial
+          image: 0892668/factorial-cache-app:0.0.3
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /factorial/logs
+              name: log-volume
+            - mountPath: /factorial/cache
+              name: cache-volume
+          env:
+            - name: APP_LANGUAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: factorial-config
+                  key: language
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: factorial-secret
+                  key: api-key
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep 10"]
+          readinessProbe:
+            httpGet:
+              path: /probe/healthcheck
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 1
+            successThreshold: 2
+            failureThreshold: 3 #민감하게 잡기
+          livenessProbe:
+            httpGet:
+              path: /probe/healthcheck
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 1
+            failureThreshold: 7 # 조금 더 둔감하게 설정
+
