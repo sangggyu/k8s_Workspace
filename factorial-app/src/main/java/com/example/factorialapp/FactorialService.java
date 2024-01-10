@@ -8,6 +8,12 @@ public class FactorialService {
 
     public BigDecimal calculate(int n) {
         if (n<=1) {
+            long elapsedTime;
+            long startTime = System.currentTimeMillis();
+            do {
+                elapsedTime = System.currentTimeMillis() - startTime;
+            } while (elapsedTime < 500);
+
             return BigDecimal.ONE;
         }
 

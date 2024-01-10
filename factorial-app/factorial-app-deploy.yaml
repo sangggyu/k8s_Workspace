@@ -21,7 +21,15 @@ spec:
       terminationGracePeriodSeconds: 60 #굳이 설정 안해도되는데 테스트겸 설정해보기 default 30 초
       containers:
         - name: factorial
-          image: 0892668/factorial-app:0.0.3
+          image: 0892668/factorial-app:0.0.4
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "1500m"
           lifecycle:
             preStop:
               exec:
@@ -30,22 +38,22 @@ spec:
             httpGet:
               path: /probe/startup
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 45
             periodSeconds: 1
             failureThreshold: 10 #약간 높게 잡기
           readinessProbe:
             httpGet:
               path: /probe/ready
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 45
             periodSeconds: 1
-            successThreshold: 2
-            failureThreshold: 3 #민감하게 잡기
+            successThreshold: 1
+            failureThreshold: 2
           livenessProbe:
             httpGet:
               path: /probe/live
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 45
             periodSeconds: 1
-            failureThreshold: 7 # 조금 더 둔감하게 설정
+            failureThreshold: 10
 
