@@ -17,22 +17,24 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	runtimeOnly 'com.h2database:h2'
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.batch:spring-batch-test'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
-jib {
+jib{
 	from {
 		image = "openjdk:17"
 	}
 	to {
-		image = "0892668/factorial-cache-app"
-		tags = ['latest', '0.0.5']
+		image = "0892668/factorial-batch"
+		tags = ['latest', '0.0.1']
 	}
 	container {
 		creationTime = "USE_CURRENT_TIMESTAMP"

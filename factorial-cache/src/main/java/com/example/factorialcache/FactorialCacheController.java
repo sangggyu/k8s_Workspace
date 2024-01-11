@@ -12,23 +12,24 @@ import java.math.BigDecimal;
 public class FactorialCacheController {
     @Value("${factorial.language}")
     private String language;
+
     @Value("${factorial.api-key}")
-    private String apikey;
+    private String apiKey;
 
     private FactorialCacheService cacheService;
     private FactorialCalculateService calculateService;
-//    private FactorialTaskService taskService;
+    private FactorialTaskService taskService;
 
-    public FactorialCacheController(FactorialCacheService cacheService, FactorialCalculateService calculateService) {
+    public FactorialCacheController(FactorialCacheService cacheService, FactorialCalculateService calculateService, FactorialTaskService taskService) {
         this.cacheService = cacheService;
         this.calculateService = calculateService;
-//        this.taskService = taskService;
+        this.taskService = taskService;
     }
 
     @GetMapping("/factorial/{n}")
     public String calculateFactorial(@PathVariable("n") int n, @RequestParam(value = "key", required = false) String key) {
         if (n>10) {
-            if (!apikey.equals(key)) {
+            if (!apiKey.equals(key)) {
                 throw new IncorrectApiKeyException("To calculate more than 10 factorials, you need the correct api-key");
             }
         }
@@ -39,6 +40,14 @@ public class FactorialCacheController {
         if (cachedResult!=null) {
             result = cachedResult;
         } else {
+            if (n>1000) {
+                long size = taskService.saveCalculationTask(n);
+                return switch (language) {
+                    case "ko" -> n + "! 계산이 예약되었습니다. 남은 작업 : " + size;
+                    case "en" -> n + "! has been scheduled. Remain task : " + size;
+                    default -> "Unsupported Language";
+                };
+            }
             result = calculateService.getCalculatedResult(n);
             cacheService.cacheFactorial(n, result);
         }

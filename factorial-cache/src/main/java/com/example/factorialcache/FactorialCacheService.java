@@ -1,61 +1,30 @@
 package com.example.factorialcache;
 
-import com.example.factorialcache.util.FileLogger;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 @Service
 public class FactorialCacheService {
 
-    private final Map<Integer, BigDecimal> factorialMap = new ConcurrentHashMap<>();
-    private final FileLogger fileLogger;
-    private final ObjectMapper objectMapper;
+    private StringRedisTemplate redisTemplate;
 
-    public FactorialCacheService(FileLogger fileLogger, ObjectMapper objectMapper) {
-        this.fileLogger = fileLogger;
-        this.objectMapper = objectMapper;
+    public FactorialCacheService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
-    @PostConstruct
-    public void loadCache() {
-        File cacheFile = new File("/factorial/cache/cache.json");
-        if (cacheFile.exists()) {
-            try {
-                Map<Integer, BigDecimal> storedCache = objectMapper
-                        .readValue(cacheFile, new TypeReference<>() {});
-                factorialMap.putAll(storedCache);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
     public BigDecimal cachedFactorial(int n) {
-        BigDecimal result = factorialMap.getOrDefault(n, null);
-        fileLogger.log(result == null ? "Cache missed " + n : "Cache Hit " + n + "!=" + result);
-        return result;
+        Object result = redisTemplate.opsForHash().get("factorial:result-set", String.valueOf(n));
+        if (result != null) {
+            return new BigDecimal(result.toString());
+        }
+        return null;
     }
 
     public void cacheFactorial(int n, BigDecimal result) {
-        fileLogger.log("Cache factorial " + n + "!=" + result);
-        factorialMap.put(n, result);
+        redisTemplate.opsForHash().put("factorial:result-set", String.valueOf(n), result.toPlainString());
     }
 
-    @Scheduled(fixedDelay = 1000)
-    public void storeCache() {
-        try {
-            objectMapper.writeValue(new File("/factorial/cache/cache.json"), factorialMap);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
 

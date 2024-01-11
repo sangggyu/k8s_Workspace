@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
@@ -31,7 +32,7 @@ jib {
 	}
 	to {
 		image = "0892668/factorial-app"
-		tags = ['latest', '0.0.4']
+		tags = ['latest', '0.0.6']
 	}
 	container {
 		creationTime ="USE_CURRENT_TIMESTAMP"

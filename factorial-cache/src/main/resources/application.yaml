@@ -1,3 +1,8 @@
 factorial:
   language: ${APP_LANGUAGE:en}
   api-key: ${API_KEY:abcd-1234}
+spring:
+  data:
+    redis:
+      host: redis-service.default.svc.cluster.local
+      port: 6379

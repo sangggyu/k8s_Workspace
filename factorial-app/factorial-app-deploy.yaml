@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 60 #굳이 설정 안해도되는데 테스트겸 설정해보기 default 30 초
       containers:
         - name: factorial
-          image: 0892668/factorial-app:0.0.4
+          image: 0892668/factorial-app:0.0.6
           imagePullPolicy: Always
           resources:
             requests:

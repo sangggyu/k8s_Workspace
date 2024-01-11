@@ -11,13 +11,14 @@ public class FactorialCalculateService {
 
     private final RestClient factorialClient = RestClient.create();
     public BigDecimal getCalculatedResult(int n) {
-        BigDecimal result = factorialClient.get()
+        String  result = factorialClient.get()
                 .uri("http://factorial-app-service:8080/factorial?n="+n)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, (request, response) -> {
                     throw new RuntimeException("invalid server response " + response.getStatusText());
                 })
-                .body(BigDecimal.class);
-        return result;
+                .body(String.class);
+
+        return new BigDecimal(result);
     }
 }
